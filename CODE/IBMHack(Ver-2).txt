@@ -1,0 +1,113 @@
+const int trigPin1 = 2;
+const int echoPin1 = 4;
+
+long duration1,distance1,watervolume;
+
+#define NUM_SAMPLES 10  //BBBB
+
+int sum = 0;    //BBBB                
+unsigned char sample_count = 0; //BBBB
+float voltage = 0.0;         //BBBB     
+
+#include <util/delay.h> //Pressure
+#include "Adafruit_BMP085.h"  //Pressure
+#include <Wire.h>  //Pressure
+Adafruit_BMP085 bmp;  //Pressure
+
+#include <SoftwareSerial.h>  //BARO
+
+SoftwareSerial mySerial(10, 11); //BARO
+
+int sensor = A0;//BARO
+int sensorValue = 0;  //BARO
+
+void setup() {  
+  //BARO
+pinMode(trigPin1, OUTPUT); // Sets the trigPin as an Output1
+pinMode(echoPin1, INPUT); // Sets the echoPin as an Input1
+
+  mySerial.begin(9600);     //BARO
+  Serial.begin(9600);  //BARO
+ bmp.begin();  //Pressure
+
+}
+void loop() {  
+
+  sensorValue = analogRead(sensor);  //MQ2
+  if (sensorValue > 280) 
+  { 
+  mySerial.print(sensorValue);
+  mySerial.print(" ");//MQ2
+  }  //MQ2
+
+  else {  //BARO
+  mySerial.print(sensorValue);
+  mySerial.print(" ");  //MQ2
+  }
+  
+  Serial.print("sensorValue : ");  //MQ2
+  Serial.println(sensorValue, DEC);  //MQ2
+
+  
+
+
+Serial.print("Temperature = ");  //Pressure
+Serial.print(bmp.readTemperature());  //Pressure
+Serial.println(" *C");  //Pressure
+Serial.print("Pressure = ");  //Pressure
+Serial.print(bmp.readPressure()); //Pressure
+
+Serial.print(" Pa");  //Pressure
+Serial.println();    //Pressure
+
+  mySerial.print(bmp.readTemperature());
+  mySerial.print(" ");
+  mySerial.print(bmp.readPressure());
+  mySerial.print(" ");
+ 
+
+  while (sample_count < NUM_SAMPLES) {  //BBBB
+        sum += analogRead(A2);  //BBBB
+        sample_count++;  //BBBB
+        delay(10);  //BBBB
+    }  //BBBB
+   
+    voltage = ((float)sum / (float)NUM_SAMPLES * 5.015) / 1024.0;  //BBBB 
+    
+    Serial.print(voltage * 11.132);  //BBBB
+    Serial.println (" V");  //BBBB
+    sample_count = 0;
+    sum = 0;  //BBBB
+
+    mySerial.print(voltage * 11.132);
+    mySerial.print(" ");
+
+
+
+
+    //ULTRASONIC PART
+// Clears the trigPin1
+digitalWrite(trigPin1, LOW);
+delayMicroseconds(2);
+// Sets the trigPin1 on HIGH state for 10 micro seconds
+digitalWrite(trigPin1, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin1, LOW);
+// Reads the echoPin1, returns the sound wave travel time in microseconds
+duration1 = pulseIn(echoPin1, HIGH);
+// Calculating the distance1
+distance1= duration1*0.034/2;
+distance1=6-distance1;
+//Calculating the water volume
+ watervolume=(distance1)*22.1257;
+// Prints the distance1 on the Serial Monitor
+Serial.print("Fuel Level ");
+Serial.println(watervolume);
+
+ mySerial.print(watervolume);
+  mySerial.print(" ");
+  mySerial.print(watervolume*45);
+mySerial.print(" ");
+
+delay(500);
+}  
